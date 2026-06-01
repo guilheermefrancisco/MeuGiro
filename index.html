@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Gastos"/>
+<title>Gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:       #0C0C0F;
+  --surface:  #141418;
+  --surface2: #1C1C22;
+  --border:   #2A2A32;
+  --border2:  #363640;
+  --text:     #F0EEF8;
+  --muted:    #6B6880;
+  --muted2:   #4A4760;
+  --emp:      #7B8CDE;
+  --emp-dim:  #1E2140;
+  --pes:      #E8855A;
+  --pes-dim:  #2E1A10;
+  --green:    #5EC47A;
+  --radius:   18px;
+  --radius-sm:10px;
+  --safe-top: env(safe-area-inset-top,  0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+*  { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html { background: var(--bg); }
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width:0; }
+
+/* ── APP SHELL ── */
+.app { max-width: 430px; margin: 0 auto; padding-bottom: calc(90px + var(--safe-bot)); }
+
+/* ── HEADER ── */
+.header {
+  padding: calc(var(--safe-top) + 20px) 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+}
+
+/* noise overlay on header */
+.header::before {
+  content:'';
+  position:absolute; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;
+  z-index:-1;
+}
+
+.header-row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.wordmark {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.wordmark span {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--pes);
+}
+
+/* date pill */
+.date-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 6px 10px 6px 8px;
+}
+.date-pill button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  width: 22px; height: 22px;
+  display: flex; align-items:center; justify-content:center;
+  border-radius: 50%;
+  transition: background .1s, color .1s;
+}
+.date-pill button:active { background: var(--border); }
+.date-pill button:disabled { opacity:.2; cursor:default; }
+#dateLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 52px;
+  text-align: center;
+}
+
+/* ── HERO TOTAL ── */
+.hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 10px;
+}
+
+.hero-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.hero-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 38px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 18px;
+}
+
+/* split cards dentro do hero */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.split-card {
+  border-radius: 12px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+}
+.split-card.emp { background: var(--emp-dim); }
+.split-card.pes { background: var(--pes-dim); }
+
+.split-card::after {
+  content:'';
+  position:absolute;
+  top:-20px; right:-20px;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  opacity: .15;
+}
+.split-card.emp::after { background: var(--emp); }
+.split-card.pes::after { background: var(--pes); }
+
+.sc-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.split-card.emp .sc-label { color: var(--emp); }
+.split-card.pes .sc-label { color: var(--pes); }
+
+.sc-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1;
+}
+.split-card.emp .sc-valor { color: var(--emp); }
+.split-card.pes .sc-valor { color: var(--pes); }
+
+.sc-count {
+  font-size: 10px;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+/* barra proporcional */
+.barra {
+  display: flex;
+  height: 3px;
+  gap: 2px;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 16px;
+  background: var(--border);
+}
+.barra-emp { background: var(--emp); border-radius:99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+.barra-pes { background: var(--pes); border-radius:99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+
+/* ── META SEMANAL ── */
+.meta-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.meta-card:active { border-color: var(--border2); }
+
+.meta-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.meta-left {}
+.meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.meta-saldo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  transition: color .3s;
+}
+.meta-saldo.ok       { color: var(--green); }
+.meta-saldo.warning  { color: #E8C55A; }
+.meta-saldo.over     { color: #E05050; }
+
+.meta-right {
+  text-align: right;
+}
+.meta-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.meta-sub {
+  font-size: 10px;
+  color: var(--muted2);
+  margin-top: 2px;
+}
+
+.meta-track {
+  height: 5px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.meta-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .5s cubic-bezier(.4,0,.2,1), background .3s;
+  max-width: 100%;
+}
+.meta-fill.ok      { background: var(--green); }
+.meta-fill.warning { background: #E8C55A; }
+.meta-fill.over    { background: #E05050; }
+
+.meta-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+
+.meta-vazia {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.meta-vazia-icon { font-size: 16px; opacity: .5; }
+
+/* modal meta */
+.meta-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+/* ── PILLS DE FILTRO ── */
+.filters {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.filters::-webkit-scrollbar { display:none; }
+
+.pill {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  white-space: nowrap;
+}
+.pill.on-todos   { background: var(--text);    border-color: var(--text);    color: var(--bg); }
+.pill.on-empresa { background: var(--emp);     border-color: var(--emp);     color: #fff; }
+.pill.on-pessoa  { background: var(--pes);     border-color: var(--pes);     color: #fff; }
+.pill.mes-pill   { border-color: var(--border2); color: var(--muted2); }
+.pill.mes-pill.on-mes { background: var(--surface2); border-color: var(--border2); color: var(--text); }
+
+/* ── LISTA ── */
+.lista { padding: 0 20px; display: flex; flex-direction: column; gap: 6px; }
+
+.empty {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 56px 20px;
+  color: var(--muted);
+  font-size: 13px;
+  gap: 10px;
+}
+.empty-icon { font-size: 32px; opacity: .5; }
+
+/* item de gasto */
+.item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  animation: rise .22s ease both;
+}
+@keyframes rise { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+/* linha lateral colorida */
+.item::before {
+  content:'';
+  position: absolute;
+  left:0; top:16%; bottom:16%;
+  width: 3px;
+  border-radius: 99px;
+}
+.item.empresa::before { background: var(--emp); }
+.item.pessoa::before  { background: var(--pes); }
+
+.item-icon {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.item.empresa .item-icon { background: var(--emp-dim); }
+.item.pessoa  .item-icon { background: var(--pes-dim); }
+
+.item-body { flex: 1; min-width: 0; }
+.item-desc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-bottom: 3px;
+}
+.item-sub {
+  display: flex; align-items: center; gap: 5px;
+}
+.chip {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.chip.empresa { background: var(--emp-dim); color: var(--emp); }
+.chip.pessoa  { background: var(--pes-dim); color: var(--pes); }
+.item-cat { font-size: 10px; color: var(--muted); font-weight: 500; }
+
+.item-end { display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; }
+.item-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.item-del {
+  background: none; border: none; color: var(--border2);
+  font-size: 16px; cursor:pointer; line-height:1;
+  padding: 0; transition: color .15s;
+}
+.item-del:active { color: #E05050; }
+
+/* ── FAB ── */
+.fab-wrap {
+  position: fixed;
+  bottom: 0; left:0; right:0;
+  display: flex;
+  justify-content: center;
+  padding: 16px 20px calc(var(--safe-bot) + 16px);
+  background: linear-gradient(transparent, var(--bg) 50%);
+  z-index: 200;
+  pointer-events: none;
+}
+.fab {
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--text);
+  border: none;
+  border-radius: 99px;
+  padding: 0 24px 0 20px;
+  height: 52px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bg);
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  transition: transform .15s, box-shadow .15s;
+  letter-spacing: .2px;
+}
+.fab:active { transform: scale(.95); box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+.fab-plus { font-size: 22px; font-weight: 300; line-height:1; }
+
+/* ── OVERLAY & SHEET ── */
+.overlay {
+  position: fixed; inset:0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 300;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.overlay.open { display: flex; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px 24px 0 0;
+  padding: 0 20px calc(var(--safe-bot) + 28px);
+  width: 100%;
+  max-width: 430px;
+  animation: sheetUp .3s cubic-bezier(.2,1,.4,1);
+}
+@keyframes sheetUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+.handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 99px;
+  margin: 14px auto 22px;
+}
+
+.sheet-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 22px;
+}
+
+/* ── TIPO TOGGLE ── */
+.tipo-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.tipo-btn {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .18s;
+  text-align: center;
+  letter-spacing: .2px;
+}
+.tipo-btn.sel-empresa {
+  background: var(--emp-dim);
+  border-color: var(--emp);
+  color: var(--emp);
+}
+.tipo-btn.sel-pessoa {
+  background: var(--pes-dim);
+  border-color: var(--pes);
+  color: var(--pes);
+}
+
+/* ── CAMPOS ── */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 7px;
+}
+.field input, .field select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color .15s;
+}
+.field input::placeholder { color: var(--muted2); }
+.field input:focus, .field select:focus { border-color: var(--border2); }
+.field input[type=number] {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.btn-save {
+  width: 100%;
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .3px;
+  transition: opacity .15s;
+}
+.btn-save:active { opacity: .8; }
+
+/* ── SHEET MÊS ── */
+.sheet-mes { max-height: 85dvh; overflow-y: auto; }
+
+.mes-bloco { margin-bottom: 24px; }
+
+.mes-bloco-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.mes-bloco-header.emp { background: var(--emp-dim); }
+.mes-bloco-header.pes { background: var(--pes-dim); }
+
+.mbh-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+}
+.mes-bloco-header.emp .mbh-label { color: var(--emp); }
+.mes-bloco-header.pes .mbh-label { color: var(--pes); }
+
+.mbh-valor {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px; font-weight: 500;
+}
+.mes-bloco-header.emp .mbh-valor { color: var(--emp); }
+.mes-bloco-header.pes .mbh-valor { color: var(--pes); }
+
+.mes-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.mes-row:last-child { border-bottom: none; }
+.mes-row-left { display:flex; align-items:center; gap:10px; }
+.mes-row-emoji { font-size:18px; }
+.mes-row-nome { font-size:13px; font-weight:500; color:var(--text); }
+.mes-row-val { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="header-row1">
+      <span class="wordmark">fluxo<span>.</span></span>
+      <div class="date-pill">
+        <button id="btnPrev">‹</button>
+        <span id="dateLabel"></span>
+        <button id="btnNext">›</button>
+      </div>
+    </div>
+
+    <!-- hero -->
+    <div class="hero">
+      <div class="hero-label">Total do dia</div>
+      <div class="hero-valor" id="totalGeral">R$ 0,00</div>
+      <div class="split">
+        <div class="split-card emp">
+          <div class="sc-label">Empresa</div>
+          <div class="sc-valor" id="totalEmpresa">R$ 0,00</div>
+          <div class="sc-count" id="countEmpresa">0 lançamentos</div>
+        </div>
+        <div class="split-card pes">
+          <div class="sc-label">Pessoal</div>
+          <div class="sc-valor" id="totalPessoa">R$ 0,00</div>
+          <div class="sc-count" id="countPessoa">0 lançamentos</div>
+        </div>
+      </div>
+      <div class="barra">
+        <div class="barra-emp" id="barraEmp" style="width:0%"></div>
+        <div class="barra-pes" id="barraPes" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- meta semanal -->
+    <div class="meta-card" id="metaCard" onclick="abrirMeta()">
+      <div id="metaVazia" class="meta-vazia" style="display:none">
+        <span class="meta-vazia-icon">🎯</span>
+        Definir meta semanal de gastos
+      </div>
+      <div id="metaConteudo" style="display:none">
+        <div class="meta-top">
+          <div class="meta-left">
+            <div class="meta-label">Meta semanal · restante</div>
+            <div class="meta-saldo ok" id="metaSaldo">R$ 0,00</div>
+          </div>
+          <div class="meta-right">
+            <div class="meta-pct" id="metaPct">0%</div>
+            <div class="meta-sub" id="metaSub">usado</div>
+          </div>
+        </div>
+        <div class="meta-track">
+          <div class="meta-fill ok" id="metaFill" style="width:0%"></div>
+        </div>
+        <div class="meta-foot">
+          <span id="metaGasto">R$ 0,00 gastos</span>
+          <span id="metaTotal">de R$ 0,00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- filtros -->
+    <div class="filters">
+      <button class="pill on-todos" data-tab="todos"   onclick="setTab('todos')">Todos</button>
+      <button class="pill"          data-tab="empresa" onclick="setTab('empresa')">🏢 Empresa</button>
+      <button class="pill"          data-tab="pessoa"  onclick="setTab('pessoa')">👤 Pessoal</button>
+      <button class="pill mes-pill" data-tab="mes"     onclick="abrirMes()">📊 Resumo do mês</button>
+    </div>
+  </div>
+
+  <!-- ── LISTA ── -->
+  <div class="lista" id="lista"></div>
+
+</div>
+
+<!-- FAB -->
+<div class="fab-wrap">
+  <button class="fab" onclick="abrirForm()">
+    <span class="fab-plus">+</span> Novo gasto
+  </button>
+</div>
+
+<!-- ── MODAL FORM ── -->
+<div class="overlay" id="overlayForm" onclick="fecharForm(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Novo gasto</div>
+
+    <div class="tipo-toggle">
+      <button class="tipo-btn sel-empresa" id="btnEmpresa" onclick="setTipo('empresa')">🏢 Empresa</button>
+      <button class="tipo-btn"            id="btnPessoa"  onclick="setTipo('pessoa')">👤 Pessoal</button>
+    </div>
+
+    <div class="field">
+      <label>Descrição</label>
+      <input id="fDesc" type="text" placeholder="Ex: almoço com cliente, Uber…" maxlength="60"/>
+    </div>
+    <div class="field">
+      <label>Valor (R$)</label>
+      <input id="fValor" type="number" inputmode="decimal" placeholder="0,00" min="0" step="0.01"/>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Categoria</label>
+        <select id="fCat">
+          <option value="🍽️ Alimentação">🍽️ Alimentação</option>
+          <option value="🚗 Transporte">🚗 Transporte</option>
+          <option value="🏨 Hospedagem">🏨 Hospedagem</option>
+          <option value="💊 Saúde">💊 Saúde</option>
+          <option value="📚 Educação">📚 Educação</option>
+          <option value="🛍️ Compras">🛍️ Compras</option>
+          <option value="⚙️ Serviços">⚙️ Serviços</option>
+          <option value="🎬 Lazer">🎬 Lazer</option>
+          <option value="📦 Outros">📦 Outros</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Data</label>
+        <input id="fData" type="date"/>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="salvar()">Salvar gasto</button>
+  </div>
+</div>
+
+<!-- ── MODAL META ── -->
+<div class="overlay" id="overlayMeta" onclick="fecharMeta(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Meta semanal</div>
+    <p class="meta-hint">Defina quanto você quer gastar nesta semana (segunda a domingo). O app vai mostrar quanto ainda resta em tempo real.</p>
+    <div class="field">
+      <label>Valor da meta (R$)</label>
+      <input id="fMeta" type="number" inputmode="decimal" placeholder="Ex: 1500,00" min="0" step="0.01"/>
+    </div>
+    <button class="btn-save" onclick="salvarMeta()">Salvar meta</button>
+    <button onclick="removerMeta()" style="width:100%;margin-top:10px;padding:14px;background:none;border:none;color:var(--muted);font-family:'Manrope',sans-serif;font-size:13px;cursor:pointer;">Remover meta</button>
+  </div>
+</div>
+
+
+<div class="overlay" id="overlayMes" onclick="fecharMes(event)">
+  <div class="sheet sheet-mes">
+    <div class="handle"></div>
+    <div class="sheet-title" id="mesTitulo">Resumo do mês</div>
+    <div id="mesConteudo"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ─────────────────────────────────────────
+let gastos   = JSON.parse(localStorage.getItem('gv3') || '[]');
+let dataAtual = hoje();
+let tabAtual  = 'todos';
+let tipoForm  = 'empresa';
+
+function hoje() { return new Date().toISOString().slice(0,10); }
+function salvarStorage() { localStorage.setItem('gv3', JSON.stringify(gastos)); }
+
+// migração da chave anterior
+(function migrar() {
+  const old = localStorage.getItem('gv2');
+  if (old && !gastos.length) {
+    try { gastos = JSON.parse(old); salvarStorage(); } catch(e){}
+  }
+})();
+
+// ── FORMATOS ─────────────────────────────────────
+function fmt(v) {
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);
+}
+function fmtData(d) {
+  if (d === hoje()) return 'hoje';
+  const [y,m,dd] = d.split('-');
+  return `${dd}/${m}`;
+}
+
+// ── HEADER ───────────────────────────────────────
+function renderHeader() {
+  document.getElementById('dateLabel').textContent = fmtData(dataAtual);
+  document.getElementById('btnNext').disabled = dataAtual >= hoje();
+
+  const dia = gastos.filter(g => g.data === dataAtual);
+  const emp = dia.filter(g => g.tipo === 'empresa');
+  const pes = dia.filter(g => g.tipo === 'pessoa');
+  const te  = emp.reduce((s,g) => s+g.valor, 0);
+  const tp  = pes.reduce((s,g) => s+g.valor, 0);
+  const tg  = te + tp;
+
+  document.getElementById('totalGeral').textContent   = fmt(tg);
+  document.getElementById('totalEmpresa').textContent = fmt(te);
+  document.getElementById('totalPessoa').textContent  = fmt(tp);
+  document.getElementById('countEmpresa').textContent = `${emp.length} lançamento${emp.length!==1?'s':''}`;
+  document.getElementById('countPessoa').textContent  = `${pes.length} lançamento${pes.length!==1?'s':''}`;
+
+  const pe = tg>0 ? (te/tg*100) : 0;
+  const pp = tg>0 ? (tp/tg*100) : 0;
+  document.getElementById('barraEmp').style.width = pe+'%';
+  document.getElementById('barraPes').style.width = pp+'%';
+}
+
+document.getElementById('btnPrev').onclick = () => {
+  const d = new Date(dataAtual+'T12:00:00');
+  d.setDate(d.getDate()-1);
+  dataAtual = d.toISOString().slice(0,10);
+  renderTudo();
+};
+document.getElementById('btnNext').onclick = () => {
+  if (dataAtual >= hoje()) return;
+  const d = new Date(dataAtual+'T12:00:00');
+  d.setDate(d.getDate()+1);
+  dataAtual = d.toISOString().slice(0,10);
+  renderTudo();
+};
+
+// ── TABS ─────────────────────────────────────────
+function setTab(t) {
+  tabAtual = t;
+  document.querySelectorAll('.pill').forEach(b => {
+    const isM = b.dataset.tab === 'mes';
+    b.className = isM ? 'pill mes-pill' : 'pill';
+    if (b.dataset.tab === t) b.classList.add(`on-${t}`);
+  });
+  renderLista();
+}
+
+// ── LISTA ─────────────────────────────────────────
+function renderLista() {
+  const el = document.getElementById('lista');
+  let itens = gastos.filter(g => g.data === dataAtual);
+  if (tabAtual === 'empresa') itens = itens.filter(g => g.tipo==='empresa');
+  if (tabAtual === 'pessoa')  itens = itens.filter(g => g.tipo==='pessoa');
+  itens.sort((a,b) => b.ts - a.ts);
+
+  if (!itens.length) {
+    el.innerHTML = `<div class="empty"><span class="empty-icon">🧾</span><span>Nenhum gasto registrado</span></div>`;
+    return;
+  }
+
+  el.innerHTML = itens.map(g => {
+    const emoji   = g.cat.split(' ')[0];
+    const catNome = g.cat.split(' ').slice(1).join(' ');
+    const bl      = g.tipo === 'empresa' ? 'Empresa' : 'Pessoal';
+    return `<div class="item ${g.tipo}">
+      <div class="item-icon">${emoji}</div>
+      <div class="item-body">
+        <div class="item-desc">${g.desc}</div>
+        <div class="item-sub">
+          <span class="chip ${g.tipo}">${bl}</span>
+          <span class="item-cat">${catNome}</span>
+        </div>
+      </div>
+      <div class="item-end">
+        <span class="item-valor">${fmt(g.valor)}</span>
+        <button class="item-del" onclick="remover(${g.ts})">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function remover(ts) {
+  if (!confirm('Remover este gasto?')) return;
+  gastos = gastos.filter(g => g.ts !== ts);
+  salvarStorage();
+  renderTudo();
+  renderMeta();
+}
+
+function renderTudo() { renderHeader(); renderLista(); }
+
+// ── FORM ─────────────────────────────────────────
+function abrirForm() {
+  document.getElementById('fDesc').value  = '';
+  document.getElementById('fValor').value = '';
+  document.getElementById('fData').value  = hoje();
+  document.getElementById('overlayForm').classList.add('open');
+  setTimeout(() => document.getElementById('fDesc').focus(), 350);
+}
+function fecharForm(e) {
+  if (e.target === document.getElementById('overlayForm'))
+    document.getElementById('overlayForm').classList.remove('open');
+}
+function setTipo(t) {
+  tipoForm = t;
+  document.getElementById('btnEmpresa').className = 'tipo-btn' + (t==='empresa' ? ' sel-empresa' : '');
+  document.getElementById('btnPessoa').className  = 'tipo-btn' + (t==='pessoa'  ? ' sel-pessoa'  : '');
+}
+function salvar() {
+  const desc  = document.getElementById('fDesc').value.trim();
+  const valor = parseFloat(document.getElementById('fValor').value);
+  const cat   = document.getElementById('fCat').value;
+  const data  = document.getElementById('fData').value || hoje();
+  if (!desc || isNaN(valor) || valor <= 0) {
+    document.getElementById('fValor').focus();
+    return;
+  }
+  gastos.push({ desc, valor, cat, data, tipo: tipoForm, ts: Date.now() });
+  salvarStorage();
+  dataAtual = data;
+  renderTudo();
+  renderMeta();
+  document.getElementById('overlayForm').classList.remove('open');
+}
+
+// ── MÊS ──────────────────────────────────────────
+function abrirMes() {
+  const agora = new Date();
+  const prefix = `${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,'0')}`;
+  const doMes  = gastos.filter(g => g.data.startsWith(prefix));
+  const emp    = doMes.filter(g => g.tipo==='empresa');
+  const pes    = doMes.filter(g => g.tipo==='pessoa');
+  const te     = emp.reduce((s,g)=>s+g.valor,0);
+  const tp     = pes.reduce((s,g)=>s+g.valor,0);
+
+  function porCat(lista) {
+    const m = {};
+    lista.forEach(g => { m[g.cat] = (m[g.cat]||0)+g.valor; });
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  }
+
+  function bloco(cls, headerCls, label, lista, total) {
+    const cats = porCat(lista);
+    const rows = cats.map(([cat,val]) => {
+      const emoji = cat.split(' ')[0];
+      const nome  = cat.split(' ').slice(1).join(' ');
+      return `<div class="mes-row">
+        <div class="mes-row-left">
+          <span class="mes-row-emoji">${emoji}</span>
+          <span class="mes-row-nome">${nome}</span>
+        </div>
+        <span class="mes-row-val">${fmt(val)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="mes-bloco">
+      <div class="mes-bloco-header ${headerCls}">
+        <span class="mbh-label">${label}</span>
+        <span class="mbh-valor">${fmt(total)}</span>
+      </div>
+      ${cats.length ? rows : '<div class="mes-row"><span class="item-cat">Sem gastos</span></div>'}
+    </div>`;
+  }
+
+  const mes = agora.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  document.getElementById('mesTitulo').textContent = `Resumo — ${mes}`;
+  document.getElementById('mesConteudo').innerHTML =
+    bloco('empresa','emp','🏢 Empresa', emp, te) +
+    bloco('pessoa', 'pes','👤 Pessoal',  pes, tp);
+  document.getElementById('overlayMes').classList.add('open');
+}
+function fecharMes(e) {
+  if (e.target === document.getElementById('overlayMes'))
+    document.getElementById('overlayMes').classList.remove('open');
+}
+
+// ── META SEMANAL ─────────────────────────────────
+let metaValor = parseFloat(localStorage.getItem('metaValor') || '0');
+
+function semanaAtual() {
+  // retorna [inicio, fim] da semana (seg-dom) da data atual
+  const d = new Date();
+  const dia = d.getDay(); // 0=dom
+  const difSeg = dia === 0 ? -6 : 1 - dia;
+  const seg = new Date(d); seg.setDate(d.getDate() + difSeg); seg.setHours(0,0,0,0);
+  const dom = new Date(seg); dom.setDate(seg.getDate() + 6); dom.setHours(23,59,59,999);
+  return [seg, dom];
+}
+
+function isoDate(d) { return d.toISOString().slice(0,10); }
+
+function renderMeta() {
+  const vazia   = document.getElementById('metaVazia');
+  const conteudo= document.getElementById('metaConteudo');
+
+  if (!metaValor || metaValor <= 0) {
+    vazia.style.display    = 'flex';
+    conteudo.style.display = 'none';
+    return;
+  }
+
+  vazia.style.display    = 'none';
+  conteudo.style.display = 'block';
+
+  const [seg, dom] = semanaAtual();
+  const gastosSemana = gastos.filter(g => {
+    const d = new Date(g.data + 'T12:00:00');
+    return d >= seg && d <= dom;
+  });
+
+  const gasto  = gastosSemana.reduce((s,g) => s+g.valor, 0);
+  const saldo  = metaValor - gasto;
+  const pct    = Math.min((gasto / metaValor) * 100, 100);
+
+  const estado = pct >= 100 ? 'over' : pct >= 80 ? 'warning' : 'ok';
+
+  const saldoEl = document.getElementById('metaSaldo');
+  const fillEl  = document.getElementById('metaFill');
+
+  saldoEl.textContent = saldo >= 0 ? fmt(saldo) : `−${fmt(Math.abs(saldo))}`;
+  saldoEl.className   = `meta-saldo ${estado}`;
+
+  fillEl.style.width  = pct + '%';
+  fillEl.className    = `meta-fill ${estado}`;
+
+  document.getElementById('metaPct').textContent  = Math.round(pct) + '%';
+  document.getElementById('metaSub').textContent  = pct >= 100 ? 'excedido' : 'usado';
+  document.getElementById('metaGasto').textContent= fmt(gasto) + ' gastos';
+  document.getElementById('metaTotal').textContent= 'de ' + fmt(metaValor);
+}
+
+function abrirMeta() {
+  document.getElementById('fMeta').value = metaValor || '';
+  document.getElementById('overlayMeta').classList.add('open');
+  setTimeout(() => document.getElementById('fMeta').focus(), 350);
+}
+function fecharMeta(e) {
+  if (e.target === document.getElementById('overlayMeta'))
+    document.getElementById('overlayMeta').classList.remove('open');
+}
+function salvarMeta() {
+  const v = parseFloat(document.getElementById('fMeta').value);
+  if (!isNaN(v) && v > 0) {
+    metaValor = v;
+    localStorage.setItem('metaValor', v);
+  }
+  document.getElementById('overlayMeta').classList.remove('open');
+  renderMeta();
+}
+function removerMeta() {
+  metaValor = 0;
+  localStorage.removeItem('metaValor');
+  document.getElementById('overlayMeta').classList.remove('open');
+  renderMeta();
+}
+
+// ── INIT ─────────────────────────────────────────
+renderTudo();
+renderMeta();
+</script>
+</body>
+</html>
